@@ -1,2 +1,294 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+Aim: To study and implement Caesar Cipher Algorithm.
+package Practicals;
+import java.util.Scanner;
+public class Prac1 {
+public static final String ALPHABET =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ //Encryption
+ public static String encryptData(String inputStr, int shiftKey){
+ inputStr = inputStr.toUpperCase();//Converting string to Upper case
+ String encryptStr = "";//Variable to store encrypted text
+ for(int i=0; i<inputStr.length(); i++){
+int pos = ALPHABET.indexOf(inputStr.charAt(i));//Getting
+position of each character of inputStr in ALPHABET
+int encryptPos = (shiftKey + pos) % 26;//Getting encrypted char
+for each char of inputStr
+ char encryptChar = ALPHABET.charAt(encryptPos);
+ encryptStr += encryptChar;
+ }
+ return encryptStr;
+ }
+ //Decryption
+ public static String decryptData(String inputStr, int shiftKey){
+ inputStr = inputStr.toUpperCase();
+ String decryptStr = "";
+ for(int i=0; i<inputStr.length(); i++){
+ int pos = ALPHABET.indexOf(inputStr.charAt(i));
+ int decryptPos = (pos - shiftKey) % 26;
+ if(decryptPos < 0){
+ decryptPos = ALPHABET.length() + decryptPos;
+ }
+ char decryptChar = ALPHABET.charAt(decryptPos);
+ decryptStr += decryptChar;
+ }
+ return decryptStr;
+ }
+ public static void main(String args[]) {
+ Scanner sc = new Scanner(System.in);
+ System.out.println("Enter a string for encryption using Caesar Cipher: ");
+ String inputStr = sc.nextLine();
+ System.out.println("Enter key: ");
+ int shiftKey = Integer.valueOf(sc.nextLine());
+ System.out.println("Encrypted Data====> " + encryptData(inputStr,
+shiftKey));
+System.out.println("Decrypted Data====> " +
+decryptData(encryptData(inputStr, shiftKey),shiftKey));
+ sc.close();
+ }
+}
+
+____________________________________________________________________________________________________________________________
+
+Aim: To create a program to perform a letter frequency attack on a
+monoalphabetic substitution cipher.
+package Practicals;
+import java.util.*;
+public class Prac2 {
+static void printString(String S, int N){
+ String []plaintext = new String[5];
+ int freq[] = new int[26];
+ int freqSorted[] = new int[26];
+ int Used[] = new int[26];
+ for(int i=0; i<N; i++){
+ if(S.charAt(i) != ' '){
+ freq[S.charAt(i) - 'A']++;
+ }
+ }
+ for(int i=0; i<26; i++){
+ freqSorted[i] = freq[i];
+ }
+ String T = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+ Arrays.sort(freqSorted);
+ freqSorted = reverse(freqSorted);
+ for(int i=0; i<5; i++){
+ int ch =- 1;
+ for(int j=0; j<26; j++){
+ if(freqSorted[i] == freq[j] && Used[j] == 0){
+ Used[j] = 1;
+ ch = j;
+ break;
+ }
+ }
+ if(ch == -1)
+ break;
+ int x = T.charAt(i) - 'A';
+ x = x - ch;
+ String curr = "";
+ for(int k=0; k<N; k++){
+ if(S.charAt(k) == ' '){
+ curr += (char)' ';
+ continue;
+ }
+ int y = S.charAt(k) - 'A';
+ y += x;
+ if(y<0)
+ y += 26;
+ if(y>25)
+ y -= 26;
+ curr += (char)('A' +y);
+ }
+ plaintext[i] = curr;
+ }
+ for(int i =0; i<5; i++){
+ System.out.print(plaintext[i] + "\n");
+ }
+ }
+ static int[] reverse(int a[]){
+ int i, n = a.length, t;
+ for(i=0; i<n/2; i++){
+ t = a[i];
+ a[i] = a[n - i - 1];
+ a[n - i - 1] = t;
+ }
+ return a;
+ }
+ public static void main(String args[]) {
+ String S = "B TJNQMF NFTTBHF";
+ int N = S.length();
+ printString(S, N);
+ }
+}
+
+_____________________________________________________________________________________________________________________________________________
+
+Aim: To implement Vigenère Cipher.
+package Practicals;
+public class Prac3 {
+ static String generateKey(String str, String key){
+ int x = str.length();
+for (int i = 0; ; i++){
+ if (x == i)
+ i = 0;
+ if (key.length() == str.length())
+ break;
+ key+=(key.charAt(i));
+ }
+ return key;
+ }
+ static String cipherText(String str, String key){
+ String cipher_text="";
+ for (int i = 0; i < str.length(); i++){
+ int x = (str.charAt(i) + key.charAt(i)) %26;
+ x += 'A';
+ cipher_text+=(char)(x);
+ }
+ return cipher_text;
+ }
+ static String originalText(String cipher_text, String key){
+ String orig_text="";
+ for (int i = 0 ; i < cipher_text.length() && i < key.length(); i++){
+ int x = (cipher_text.charAt(i) - key.charAt(i) + 26) %26;
+ x += 'A';
+ orig_text+=(char)(x);
+ }
+ return orig_text;
+ }
+ static String LowerToUpper(String s){
+ StringBuffer str =new StringBuffer(s);
+ for(int i = 0; i < s.length(); i++){
+ if(Character.isLowerCase(s.charAt(i))){
+ str.setCharAt(i, Character.toUpperCase(s.charAt(i)));
+ }
+ }
+ s = str.toString();
+ return s;
+ }
+public static void main(String args[]) {
+ String Str = "SECURITYLAB";
+ String Keyword = "AYUSH";
+ String str = LowerToUpper(Str);
+ String keyword = LowerToUpper(Keyword);
+ String key = generateKey(str, keyword);
+ String cipher_text = cipherText(str, key);
+ System.out.println("Ciphertext : " + cipher_text + "\n");
+System.out.println("Original/Decrypted Text : " +
+originalText(cipher_text, key));
+ }
+}
+
+______________________________________________________________________________________________________________
+
+Aim: To encrypt message using Electronic Code Book (ECB) mode and
+Cipher Block Chaining (CBC) mode.
+# ECB :-
+package Practicals;
+import java.security.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+public class Prac4 {
+ public KeyGenerator keygenerator;
+ public SecretKey myKey;
+ Cipher c;
+ public Prac4() throws Exception{
+ // Key generation
+ keygenerator = KeyGenerator.getInstance("AES");
+ myKey = keygenerator.generateKey();
+ // Creating the cipher
+ c = Cipher.getInstance("AES/ECB/PKCS5Padding");
+ }
+ public byte[] performEncryption(String s) throws Exception{
+ // Initialize the cipher for encryption
+ c.init(Cipher.ENCRYPT_MODE, myKey);
+ //data to be encrypted
+ byte[] text = s.getBytes();
+ // Encrypt the data
+ byte[] textEncrypted = c.doFinal(text);
+ return(textEncrypted);
+ }
+ public String performDecryption(byte[] s)throws Exception{
+ // Initialize the same cipher for decrypting data
+ c.init(Cipher.DECRYPT_MODE, myKey);
+ // Decrypt the data
+ byte[] textDecrypted = c.doFinal(s);
+ return(new String(textDecrypted));
+ }
+ public static void main(String args[]) throws Exception {
+ Prac4 obj = new Prac4();
+byte[] str = obj.performEncryption("This data in encrypted using
+Java AES_ECB");
+ System.out.println("Encrypted String: " + str);
+System.out.println("Decrypted String: " +
+obj.performDecryption(str));
+ }
+}
+
+________________________________________________________________________________________________________________________________
+
+Aim: To implement and analyze RSA cryptosystem and Digital
+signature scheme using RSA.
+# Function to find gcd of two numbers
+def euclid(m, n):
+ if n == 0:
+ return m
+ else:
+ r = m % n
+ return euclid(n, r)
+# Program to find Multiplicative inverse
+def exteuclid(a, b):
+ r1 = a
+ r2 = b
+ s1 = int(1)
+ s2 = int(0)
+ t1 = int(0)
+ t2 = int(1)
+ while r2 > 0:
+ q = r1//r2
+ r = r1-q * r2
+ r1 = r2
+ r2 = r
+ s = s1-q * s2
+ s1 = s2
+ s2 = s
+ t = t1-q * t2
+ t1 = t2
+ t2 = t
+ if t1 < 0:
+ t1 = t1 % a
+ return (r1, t1)
+# Enter two large prime numbers p and q
+p = 823
+q = 953
+n = p * q
+Pn = (p-1)*(q-1)
+# Generate encryption key in range 1<e<Pn
+key = []
+for i in range(2, Pn):
+ gcd = euclid(Pn, i)
+ if gcd == 1:
+ key.append(i)
+# Select an encryption key from the above list
+e = int(313)
+# Obtain inverse of encryption key in Z_Pn
+r, d = exteuclid(Pn, e)
+if r == 1:
+ d = int(d)
+ print("decryption key is: ", d)
+else:
+ print("Multiplicative inverse for\
+ the given encryption key does not \
+ exist. Choose a different encryption key ")
+# Enter the message to be sent
+M = 19070
+# Signature is created by Alice
+S = (M**d) % n
+# Alice sends M and S both to Bob. Bob generates message M1 using the
+# signature S, Alice's public key e and product n.
+M1 = (S**e) % n
+# If M = M1 only then Bob accepts the message sent by Alice.
+if M == M1:
+ print("As M = M1, Accept the\
+ message sent by Alice")
+else:
+ print("As M not equal to M1,\
+ Do not accept the message\
+ sent by Alice ")
